@@ -1,0 +1,34 @@
+.body div{
+    background-color:red;
+}
+.name{
+    font-size: medium;
+}
+#headshot{
+    margin-left: 15px;
+    margin-right: 25px;
+    width: 400px;
+    height: 600px;
+    float: right;
+}
+.content{
+    background-color: rgb(224, 216, 206);
+    padding-top: 25px;
+    padding-left: 25px;
+}
+#m9sweeper-img{
+    margin-left: 25px;
+    float: left;
+    margin-bottom: 75px;
+    margin-right: 15px;
+    padding-top: 40px;
+}
+#tekumo-img{
+    float: right;
+    margin-top: 40px;
+    margin-right: 20px;
+}
+
+.card-divider{
+    background-color:  rgb(224, 216, 206);
+}
