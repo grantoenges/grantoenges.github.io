@@ -1,0 +1,165 @@
+---
+title: "Stats_Project Group D"
+output: html_document
+---
+
+#Introduction
+
+Buying a car is a major choice in a person’s life, especially considering that the average person spends 18 full days every year behind the wheel. The equivalent of about four and a half years over the course of their entire life. Most people, during any other year, are in their cars at least once pretty much every single day. Picking a car can be a short term decision with long term consequences. On average you’ll have that car for six years, but it could last you the better part of two decades. Six years is longer than it takes most people to get a degree and twice as long as the average relationship. On average you’ll move more often than you’ll get a new car, so it's important that you have an analytical and objective way to make your decision, an accurate way to figure out how much it's worth based on hard data. How much is that car actually worth?
+
+	Our question evolved, based on the availability of data and the capability of our model, into if we could predict the price of a car based on a few key variables that anyone buying a car would have. The prediction of the price of the car is analogous with how much the car is actually worth and how much someone is over or under-charging for the car. We focused specifically on only the 5 main German auto brands, Volkswagen, Audi, Porsche, and Mercedes. Our data also only had cars from german speaking countries. We can’t predict the price of every car, but we can tell approximately how much a German car in a Germany is worth.
+
+	Our model attempts to predict the price of a car based on several variables, vehicle type, year of registration, gearbox type, whether mileage was high or low, brand, and if the car had been repaired or not. With those six variables we can predict fit price as well as a confidence interval using a linear model.
+
+```{r, message=FALSE}
+library(tidyverse)
+library(Stat2Data)
+library(skimr)
+library(leaps)
+```
+
+```{r}
+autos = doctors <- read_csv("autos.csv", na = c("", NA, "N/A"))
+skim(autos)
+
+autos = subset(autos, select = -c(dateCrawled,seller,offerType,abtest,powerPS,monthOfRegistration,fuelType,dateCreated,postalCode,lastSeen,nrOfPictures))
+```
+
+These functions narrowed it down to the top 5 german car brands 
+
+```{r}
+porsche = autos%>%
+  filter(brand == "porsche")
+volkswagen = autos%>%
+  filter(brand == "volkswagen")
+mercedes = autos%>%
+  filter(brand == "mercedes_benz")
+bmw = autos%>%
+  filter(brand == "bmw")
+audi = autos%>%
+  filter(brand == "audi")
+```
+
+This function merges all 5 data sets we created earlier into one
+This function removes any cars that did not have all the data we were looking for
+
+```{r}
+germancars= rbind(mercedes,volkswagen,porsche,bmw,audi)
+
+
+germancars<-germancars%>%
+  filter(price > 5000)%>%
+  filter(price < 100000)%>%
+  filter(vehicleType != "NA")%>%
+  filter(gearbox != "NA")%>%
+  filter(model != "NA")%>%
+  filter(brand != "NA")%>%
+  filter(notRepairedDamage != "NA")%>%
+  filter(vehicleType != "andere")%>%
+  filter(model != "andere")%>%
+  filter(yearOfRegistration>=2005)%>%
+  filter(yearOfRegistration<=2016)%>%
+  mutate(notRepairedDamageNumber= ifelse(notRepairedDamage=="ja",1,0))%>%
+  filter(kilometer!= 150000)
+
+germancars <- germancars %>%
+  mutate(kilometerHL='AA')
+
+germancars <- germancars %>%
+  mutate(kilometerHL = case_when(
+    kilometer <=50000 ~ "low",
+    kilometer >= 100000 ~ "high",
+    kilometerHL == 'AA' ~ "middle"
+  ))
+
+```
+
+
+Summary:
+
+we started off with a lot of variables in our data set that we did not need like postal code and fuel type. So we removed those variables first. We then removed any cars that had "NA" as any of their data types, as we can't generate good data for price from those cars. Next, we decided to limit the price of the cars we were looking at. we removed any cars over 100,000 euros and less than 5000 euros. We did this because some cars had a price of 0 and others had a price of 999,999 and we did not feel like those were accurate data points to have. Then we decided to narrow it down to the top 5 german car brands Audi, Porsche, BMW, Volkswagen, and Mercedes benz. Lastly, we did have a little bit of trouble translating the data set from german to english, but we got it done. 
+
+Overall we ended up with the 9 variables of name, price, vehicle type, year of registration, gearbox, model, kilometer, brand, and not repaired damage. 
+
+Name: the name variable was bright in as a string and that is what we were expecting it to be
+Price: this variable was brought in as a num and that is what we were expecting
+Vehicle type: this variable was brought in as a string and that is what we were expecting
+Year of registration: this variable was brought in as a num and that is what we were expecting
+Yearbox: this variable was brought in as a string and that is what we were expecting
+Model: this variable was brought in as a string and that is what we were expecting
+Kilometer: this variable was brought in as a num and that is what we were expecting
+Brand: this variable was brought in as a string and that is what we were expecting
+Not repaired damage: this variable was brought in as a string and that is what we were expecting
+
+#Our Model
+```{r}
+lm1 <- lm(log(price)~ vehicleType+yearOfRegistration+gearbox+kilometerHL+brand+notRepairedDamage, data = germancars)
+summary(lm1)
+anova(lm1)
+plot(lm1)
+ggplot(germancars)+geom_histogram(aes(x=log(price)))
+
+ggplot(germancars)+geom_histogram(aes(x=kilometerHL),stat="count")
+
+lm2 <- lm(log(price)~ vehicleType+yearOfRegistration+gearbox+kilometerHL+brand+notRepairedDamageNumber, data = germancars)
+```
+
+
+
+#testing and training data
+```{r}
+set.seed(9)
+
+training_try <- sample(1:29419, 28419, replace = FALSE)
+
+training<-germancars%>%
+  slice(training_try)
+
+testing<-germancars%>%
+  slice(-training_try)
+
+model1 = lm(log(price)~ vehicleType+yearOfRegistration+gearbox+kilometerHL+brand+notRepairedDamage, data = training)
+summary(model1)
+
+testing <- testing %>%
+  mutate(yhats = predict(model1, newdata = testing))
+
+testing <- testing %>%
+  mutate(residuals = price - yhats)
+
+testing %>%
+  summarize(cor = cor(price, yhats))
+
+testing %>%
+  summarize(cor = cor(price, yhats)) %>%
+  mutate(R2 = cor^2)
+
+testing %>%
+  summarize(cor = cor(price, yhats)) %>%
+  mutate(R2 = cor^2, shrinkage = summary(model1)$r.squared - R2)
+
+ggplot(testing, aes(x = yhats, y = residuals)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+```
+
+#Confidence intervals
+```{r}
+confint(model1)
+predict(model1,newdata = data.frame(price=10000, vehicleType="limousine", yearOfRegistration=2015, gearbox = "automatik", model="e_klasse", kilometer=20000, brand="mercedes_benz", notRepairedDamage="nein", notRepairedDamageNumber=0, kilometerHL="low"), interval = "confidence")
+```
+
+#Conclusion
+
+With our model complete, how well did we answer the question? Can we predict within decent accuracy how much a car is worth without even knowing what model of car it is? We did. Our model shows that all of the data we used are statistically significant and that they do factor into the price of a car. However, our models prediction is just a prediction. We also compared it to the value of a 2006 Porsche 911 Carerra with 50,000 kilometers. our model estimated it would be worth $42,018 after being converted from euros. we looked it up and found that that model car with about 50000 kilometers sells for anywhere between 40,000 and 45,000 USD..
+
+Our model shows a proof of concept for predicting price, however it is not a perfect model. While we have a lot of data points and the model does a decent job predicting the price of a car, it only predicts the price of certain brands and models of cars. This means that this model can not be used to predict the price of, say, a Ford. It also only accurately predicts cars that were sold within a certain set of years. The model will likely not be able to predict the price of a car that is released next year for example.
+
+The data set that we used to create our model was not a complete data set of every car ever sold, so it also has its limitations. The data was scraped from ebay-kleinanzeigen. This is the German ebay, and this means that we only have prices of cars sold to/from people who speak German. Not only that, but within the data set there were a lot of samples that did not have all of the variables we needed filled out. This means that our model can’t be expanded very much using this data set. In terms of building our model from this data set, we also couldn’t include every variable you might want to predict the price of a car. While the model of the car is provided, extra work would have to be done to manually find and add certain statistics of each car to the data set. Statistics like fuel economy, car size, number of passengers, etc. Our model also does not incorporate cars that appreciate in value over time. 
+
+Overall, the model that we created was a good start to answering the question of how much a car is worth. We showed that there is a strong correlation between price and our explanatory variables. If the model was expanded to use more statistics about the car such as fuel economy, number of passengers, and other things then the model would probably be able to very accurately estimate the price of a car. And if you are looking to buy a car and the price of it is way higher than what the model predicts, you could know that you aren’t getting a very good deal.
+
+
+
+
+

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Resume</title>
+        <link rel="stylesheet" href="style.css">
+        <!-- <link rel="stylesheet" href="style.css"> -->
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width = device-width, initial=scale=1"/>
+        <link rel="stylesheet" href="assets/css/foundation.css">
+    </head>
+    <body>
+        <div class="show-for-medium top-bar">
+          <div class="top-bar-left">
+            <a href="index.html">
+              <div>
+                <h2>Grant Toenges</h2>
+              </div>
+            </a>
+          </div>
+          <div class="top-bar-right">
+            <ul class="nav-menu">
+              <div class="menu">
+                <div>
+                  <h4><a href="projects.html" target="_self">Projects</a></h4>
+                </div>
+                <div>
+                  <h4><a href="resume.html" target="_self">Resume</a></h4>
+                </div>
+                <div>
+                  <h4><a href="fun.html" target="_self">Fun Stuff</a></h4>
+                </div>
+              </div>
+            </ul>
+          </div>
+        </div>
+        <div class="hide-for-medium top-bar">
+          <div class="top-bar-left" data-responsive-toggle="hidden-menu">
+            <ul id="hidden-menu">
+              <div><h4><a href="index.html" target="_self">Grant Toenges</a></h4></div>
+              <div><a href="crimeMapProject.html" target="_self">Crime Map Project</a></div>
+              <div><a href="projects.html" target="_self">RESTful Server Project</a></div>
+              <div><a href="carsProject.html" target="_self">Stats Cars Project</a></div>
+              <div><h4><a href="resume.html" target="_self">Resume</a></h4></div>
+              <div><h4><a href="fun.html" target="_self">Fun Stuff</a></h4></div>
+            </ul>
+          </div>
+        </div>
+        <div class="content">
+          <h3>Predicting the price of cars</h3>
+          <div class="grid-x margin-right-20">
+            <p>For this project, we got to pick our own topic we wanted to find a dataset on and see if we could create a linear model of our data. 
+                My group chose a dataset of cars. It provided us with a number of variables about the car like mileage, year, and condition and we were left to
+                create a model that fit the data. We created a model and used it to predict the price of sally from the movie cars. We found out she was a
+                2006 Porsche 911 Cararra. At the time they were selling on the market for about $44,000 and our model predicted Sally to be worth just over $42,000
+                This project helped me become a better coder as we had to do a lot of data manipulation and model cretion in R studio.
+            </p>
+            <br>
+            <p><a href="https://docs.google.com/presentation/d/1usW4wN9Axdce04XMg7PnjsqjVBWZ8ZdSeu6feIFgegk/edit?usp=sharing" target="_self">See the Presentation</a></p>
+          </div>
+          <div class="image">
+            <img src="sally.png" style="height: 200px; width: 300px;">
+          </div>
+          <p><a href="Stats_data_appendix.Rmd" download>See the code</a></p>
+          <p><a href="autos.csv" download>see the dataset</a></p>
+        </div>
+      </body>
+</html>
